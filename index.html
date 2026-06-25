@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Acompanhamento de Oficinas CRJ</title>
+  <style>
+    :root{
+      --bg:#f5f1ff;
+      --bg2:#ebe3ff;
+      --card:#ffffff;
+      --ink:#20172f;
+      --muted:#6e6381;
+      --line:#ddd2f2;
+      --purple:#5f35b1;
+      --purple2:#7b4ee6;
+      --lilac:#d8c8ff;
+      --yellow:#f8c945;
+      --green:#1d9f72;
+      --red:#c7435d;
+      --blue:#356bd8;
+      --orange:#c96b18;
+      --shadow:0 18px 45px rgba(39, 21, 75, .12);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink);background:radial-gradient(circle at 15% 5%,#fff6c7 0 12%,transparent 30%),radial-gradient(circle at 95% 0,#decfff 0 16%,transparent 34%),linear-gradient(135deg,var(--bg),#fff)}
+    button,input,select,textarea{font-family:inherit}
+    button{cursor:pointer}
+    .app{display:grid;grid-template-columns:290px 1fr;min-height:100vh}
+    aside{position:sticky;top:0;height:100vh;padding:22px;background:linear-gradient(180deg,#29124e,#4d2389 55%,#27104b);color:white;overflow:auto}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+    .mark{width:48px;height:48px;border-radius:16px;background:linear-gradient(135deg,var(--yellow),#fff3a4);display:grid;place-items:center;color:#351b5c;font-weight:1000;font-size:18px;box-shadow:0 14px 30px rgba(0,0,0,.18)}
+    .brand h1{font-size:18px;line-height:1.05;margin:0;letter-spacing:-.03em}
+    .brand p{margin:4px 0 0;color:#dacdff;font-size:12px}
+    nav{display:grid;gap:8px}
+    .navbtn{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:white;border-radius:16px;padding:12px 13px;text-align:left;font-weight:800;display:flex;gap:9px;align-items:center;transition:.18s ease}
+    .navbtn:hover,.navbtn.active{background:rgba(255,255,255,.18);transform:translateX(3px)}
+    .sideBox{margin-top:22px;padding:14px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);border-radius:18px;color:#f4efff;font-size:13px;line-height:1.4}
+    .sideBox b{color:#fff2a5}
+    main{padding:26px;max-width:1500px;width:100%;overflow:hidden}
+    .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:20px}
+    .topbar h2{font-size:31px;line-height:1.05;margin:0;letter-spacing:-.04em}
+    .topbar p{margin:7px 0 0;color:var(--muted);max-width:850px;line-height:1.45}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+    .chip,.tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:#efe8ff;color:#45217f;border:1px solid #d9ccf4;font-weight:800;font-size:12px;white-space:nowrap}
+    .tag.yellow{background:#fff7d4;color:#704f00;border-color:#f5dc79}.tag.green{background:#e2fbef;color:#116945;border-color:#a8e7c8}.tag.red{background:#ffe8ed;color:#8b2340;border-color:#f2b7c5}.tag.blue{background:#eaf0ff;color:#1f4c9e;border-color:#c7d6ff}.tag.gray{background:#f1eef5;color:#5d536b;border-color:#d9d3e3}.tag.orange{background:#fff0df;color:#80400d;border-color:#ffd1a1}
+    .btn{border:0;background:linear-gradient(135deg,var(--purple),var(--purple2));color:#fff;font-weight:900;border-radius:14px;padding:11px 14px;box-shadow:0 10px 24px rgba(95,53,177,.22);display:inline-flex;align-items:center;gap:8px;justify-content:center}
+    .btn:hover{filter:brightness(1.04);transform:translateY(-1px)}
+    .btn.secondary{background:#fff;color:#472383;border:1px solid var(--line);box-shadow:none}.btn.ghost{background:transparent;color:#472383;border:1px dashed #bcaee0;box-shadow:none}.btn.danger{background:linear-gradient(135deg,#b73552,#e05a75)}.btn.ok{background:linear-gradient(135deg,#13885e,#21b982)}.btn.warn{background:linear-gradient(135deg,#b36a00,#e7a515)}.btn.small{font-size:12px;padding:8px 10px;border-radius:12px}.btn.block{width:100%}
+    .section{display:none;animation:fade .18s ease}.section.active{display:block}@keyframes fade{from{opacity:.2;transform:translateY(5px)}to{opacity:1;transform:none}}
+    .grid{display:grid;gap:16px}.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}.grid.four{grid-template-columns:repeat(4,1fr)}
+    .card{background:rgba(255,255,255,.87);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}.card h3{margin:0 0 12px;font-size:19px;letter-spacing:-.02em}.card h4{margin:0 0 8px;font-size:15px}.muted{color:var(--muted)}.smalltxt{font-size:12px}.divider{height:1px;background:var(--line);margin:14px 0}.hidden{display:none!important}
+    .kpi{position:relative;overflow:hidden;min-height:126px}.kpi .value{font-size:34px;font-weight:1000;letter-spacing:-.06em;margin:10px 0 4px}.kpi .label{color:var(--muted);font-weight:800;font-size:13px}.kpi:after{content:"";position:absolute;right:-28px;bottom:-40px;width:118px;height:118px;border-radius:50%;background:rgba(95,53,177,.09)}
+    .progress{height:12px;background:#e7ddfa;border-radius:999px;overflow:hidden;margin-top:10px}.bar{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--yellow));border-radius:999px;transition:.25s ease}.bar.green{background:linear-gradient(90deg,#168a60,#48d092)}.bar.red{background:linear-gradient(90deg,#c7435d,#ff8aa2)}.bar.blue{background:linear-gradient(90deg,#315ed0,#74a1ff)}
+    form{display:grid;gap:12px}.formrow{display:grid;grid-template-columns:1fr 1fr;gap:12px}.formrow.three{grid-template-columns:1fr 1fr 1fr}.formrow.four{grid-template-columns:repeat(4,1fr)}label{font-size:12px;font-weight:900;color:#47365f;display:block;margin-bottom:6px}input,select,textarea{width:100%;border:1px solid #d7cce9;background:#fff;border-radius:14px;padding:11px 12px;color:var(--ink);outline:none}textarea{min-height:98px;resize:vertical}input:focus,select:focus,textarea:focus{border-color:#8c65de;box-shadow:0 0 0 4px rgba(123,78,230,.12)}
+    .checks{display:flex;gap:7px;flex-wrap:wrap}.checkpill{display:inline-flex;align-items:center;gap:7px;padding:8px 10px;border-radius:999px;background:#f3edff;border:1px solid #d8ccf5;font-size:12px;font-weight:800;color:#4a2a84}.checkpill input{width:auto;margin:0}
+    .list{display:grid;gap:10px}.item{border:1px solid var(--line);background:#fff;border-radius:18px;padding:14px}.itemHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.itemTitle{font-weight:1000;font-size:16px;margin-bottom:4px}.actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:#fff}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:11px;border-bottom:1px solid #eee7f8;text-align:left;vertical-align:top;font-size:13px}th{background:#f4efff;color:#45217f;font-size:12px;text-transform:uppercase;letter-spacing:.03em}tr:last-child td{border-bottom:0}
+    .calendarTop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}.dow{font-size:12px;font-weight:1000;color:#5b4975;text-align:center;padding:7px}.day{min-height:146px;background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:18px;padding:10px;box-shadow:0 10px 25px rgba(39,21,75,.06);display:flex;flex-direction:column;gap:7px}.day.mutedDay{opacity:.42}.dayNumber{font-weight:1000;font-size:13px;color:#4b3669;display:flex;justify-content:space-between}.event{padding:8px;border-radius:13px;background:#f3edff;border:1px solid #dacdf3;font-size:12px;line-height:1.25}.event b{display:block;margin-bottom:3px}.event.done{background:#e8fbf2;border-color:#b4e8d0}.event.cancel{background:#ffe9ef;border-color:#f2b5c4}.event .line{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}.event button{margin-top:7px;width:100%;font-size:11px;padding:6px 8px;border-radius:10px}
+    .reportBox{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;line-height:1.5;max-height:520px;overflow:auto}.photoGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}.photoThumb{position:relative;aspect-ratio:1/1;border-radius:13px;overflow:hidden;border:1px solid var(--line);background:#f0eafd}.photoThumb img{width:100%;height:100%;object-fit:cover}.photoThumb button{position:absolute;top:5px;right:5px;border:0;background:rgba(0,0,0,.55);color:#fff;border-radius:999px;width:24px;height:24px}
+    .modal{position:fixed;inset:0;background:rgba(19,10,35,.56);display:none;align-items:flex-start;justify-content:center;padding:22px;z-index:50;overflow:auto}.modal.open{display:flex}.modalPanel{width:min(1030px,100%);background:#fff;border-radius:26px;padding:20px;box-shadow:0 28px 80px rgba(0,0,0,.28);border:1px solid var(--line);animation:pop .15s ease}@keyframes pop{from{opacity:.4;transform:scale(.97)}to{opacity:1;transform:none}}.modalHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.modalHead h3{margin:0;font-size:22px}.close{border:0;background:#f2ecff;color:#43247a;border-radius:12px;width:38px;height:38px;font-size:22px}
+    .empty{padding:18px;border:1px dashed #c9bce8;border-radius:18px;background:#fbf9ff;color:var(--muted);line-height:1.45}.notice{border-left:5px solid var(--yellow);background:#fff9df;border-radius:16px;padding:13px;color:#5f4500;line-height:1.45}.dangerNote{border-left:5px solid var(--red);background:#fff0f3;border-radius:16px;padding:13px;color:#74243a;line-height:1.45}.successNote{border-left:5px solid var(--green);background:#eafff4;border-radius:16px;padding:13px;color:#15573e;line-height:1.45}
+    .toast{position:fixed;right:24px;bottom:24px;background:#20172f;color:#fff;border-radius:16px;padding:13px 16px;box-shadow:0 18px 45px rgba(0,0,0,.25);z-index:80;opacity:0;transform:translateY(15px);transition:.2s}.toast.show{opacity:1;transform:none}
+    .printOnly{display:none}
+    @media(max-width:1050px){.app{grid-template-columns:1fr}aside{position:relative;height:auto}.grid.four,.grid.three,.grid.two{grid-template-columns:1fr}.formrow,.formrow.three,.formrow.four{grid-template-columns:1fr}.calendar{grid-template-columns:1fr}.dow{display:none}.day{min-height:auto}.topbar{flex-direction:column}.toolbar{justify-content:flex-start}}
+    @media print{body{background:#fff}.app{display:block}aside,.toolbar,.navbtn,.modal,.toast,.noPrint{display:none!important}main{padding:0}.section{display:block}.section:not(.printActive){display:none!important}.card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}.reportBox{max-height:none}.printOnly{display:block}.topbar p{color:#333}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <div class="mark">CRJ</div>
+      <div>
+        <h1>Acompanhamento<br>de Oficinas</h1>
+        <p>Oficinas + CFDH + Relatórios</p>
+      </div>
+    </div>
+    <nav>
+      <button class="navbtn active" data-tab="dashboard">📊 Painel inicial</button>
+      <button class="navbtn" data-tab="oficinas">🧩 Cadastro de oficinas</button>
+      <button class="navbtn" data-tab="cfdh">🟣 Planejamento CFDH</button>
+      <button class="navbtn" data-tab="calendario">📅 Calendário e execução</button>
+      <button class="navbtn" data-tab="relatorios">📝 Relatórios</button>
+      <button class="navbtn" data-tab="config">⚙️ Metas e backup</button>
+    </nav>
+    <div class="sideBox">
+      <b>Lógica do sistema:</b><br>
+      1. Cadastre oficinas e equipe.<br>
+      2. Gere o calendário mensal.<br>
+      3. Planeje CFDH transversal por oficina.<br>
+      4. Registre execução, presença, fotos e observações.<br>
+      5. Gere relatório quantitativo e qualitativo.
+    </div>
+    <div class="sideBox">
+      <b>Cuidados:</b><br>
+      Em “jovens específicos”, prefira iniciais, codinome ou número interno. Evite expor dados sensíveis no relatório.
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">Painel inicial</h2>
+        <p id="pageDesc">Visão geral das oficinas, execução mensal, horas de CFDH transversal por educador, registros e evidências.</p>
+      </div>
+      <div class="toolbar noPrint">
+        <select id="currentMonth" onchange="setCurrentMonth(this.value)"></select>
+        <button class="btn secondary" onclick="seedDemo()">Carregar modelo</button>
+        <button class="btn" onclick="generateMonthSessions()">Gerar calendário do mês</button>
+      </div>
+    </div>
+
+    <section id="dashboard" class="section active">
+      <div class="grid four" id="kpis"></div>
+      <div class="grid two" style="margin-top:16px">
+        <div class="card">
+          <h3>Metas por educador — CFDH transversal em oficinas</h3>
+          <div id="educatorProgress" class="list"></div>
+        </div>
+        <div class="card">
+          <h3>Alertas de fechamento mensal</h3>
+          <div id="alerts"></div>
+        </div>
+      </div>
+      <div class="grid two" style="margin-top:16px">
+        <div class="card">
+          <h3>Agenda próxima</h3>
+          <div id="nextAgenda" class="list"></div>
+        </div>
+        <div class="card">
+          <h3>Base metodológica embutida no sistema</h3>
+          <div class="notice smalltxt">
+            Oficinas devem ser acompanhadas pelo educador social, articulando conteúdo, vínculo, demandas dos jovens e princípios do CRJ. O CFDH pode ser transversal dentro da oficina e também estrutural em atividades próprias. A meta padrão configurada aqui é de 20h mensais de CFDH por educador, ajustável em “Metas e backup”.
+          </div>
+          <div class="chips">
+            <span class="tag blue">Oficina acompanhada</span>
+            <span class="tag yellow">CFDH transversal</span>
+            <span class="tag green">Registro fotográfico</span>
+            <span class="tag orange">Relatório qualitativo</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="oficinas" class="section">
+      <div class="grid two">
+        <div class="card">
+          <h3>Cadastrar oficina</h3>
+          <form id="workshopForm" onsubmit="saveWorkshop(event)">
+            <input type="hidden" id="workshopId">
+            <div class="formrow">
+              <div><label>Nome da oficina</label><input id="wName" required placeholder="Ex.: Capoeira, Fotografia, Jiu-jitsu"></div>
+              <div><label>Oficineiro(a)</label><input id="wInstructor" required placeholder="Nome do oficineiro"></div>
+            </div>
+            <div class="formrow">
+              <div><label>Educador(a) referência</label><input id="wEducator" required placeholder="Nome do educador"></div>
+              <div><label>Onde ocorre normalmente</label><input id="wLocation" placeholder="Sala, quadra, CRJ, território, escola parceira"></div>
+            </div>
+            <div class="formrow">
+              <div><label>Horário padrão</label><input id="wTime" placeholder="Ex.: 17h30 às 19h"></div>
+              <div><label>Carga horária por encontro</label><input id="wDefaultHours" type="number" step="0.5" min="0" value="2"></div>
+            </div>
+            <div>
+              <label>Habilidades trabalhadas / observadas</label>
+              <input id="wSkills" placeholder="Separe por vírgula: vínculo, disciplina, expressão corporal, protagonismo...">
+            </div>
+            <div>
+              <label>Dias de funcionamento da oficina</label>
+              <div class="checks" id="wDays"></div>
+            </div>
+            <div>
+              <label>Observações da oficina / atribuições de acompanhamento</label>
+              <textarea id="wObs" placeholder="Ex.: acompanhar vínculo, presença, relação oficineiro-jovens, demandas que aparecem durante a oficina..."></textarea>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn secondary" onclick="clearWorkshopForm()">Limpar</button>
+              <button class="btn">Salvar oficina</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Oficinas cadastradas</h3>
+          <div id="workshopsList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="cfdh" class="section">
+      <div class="grid two">
+        <div class="card">
+          <h3>Planejar CFDH transversal na oficina</h3>
+          <form id="cfdhForm" onsubmit="saveCfdhPlan(event)">
+            <input type="hidden" id="cfdhId">
+            <div class="formrow">
+              <div><label>Oficina vinculada</label><select id="cWorkshop" required onchange="fillEducatorByWorkshop()"></select></div>
+              <div><label>Educador responsável</label><input id="cEducator" required placeholder="Será preenchido pela oficina"></div>
+            </div>
+            <div class="formrow">
+              <div><label>Tema CFDH do mês</label><select id="cTheme" required></select></div>
+              <div><label>Nome da atividade</label><input id="cActivity" required placeholder="Ex.: Roda de conversa antes do treino"></div>
+            </div>
+            <div class="formrow three">
+              <div><label>Horas por dia</label><input id="cHours" type="number" min="0" step="0.5" value="1" required></div>
+              <div><label>Tipo</label><select id="cType"><option>Transversal</option><option>Estrutural</option></select></div>
+              <div><label>Produto/evidência esperada</label><input id="cProduct" placeholder="Cartaz, roda, lista, foto, fala guiada..."></div>
+            </div>
+            <div>
+              <label>Dias em que será executado na oficina</label>
+              <div class="formrow">
+                <input type="date" id="cDatePick">
+                <button type="button" class="btn secondary" onclick="addCfdhDate()">Adicionar dia</button>
+              </div>
+              <div class="actions" style="justify-content:flex-start;margin-top:8px">
+                <button type="button" class="btn ghost small" onclick="addAllWorkshopDatesToCfdh()">Adicionar todos os dias da oficina no mês</button>
+                <button type="button" class="btn ghost small" onclick="clearCfdhDates()">Limpar dias</button>
+              </div>
+              <div id="cDates" class="chips"></div>
+            </div>
+            <div><label>Objetivo pedagógico</label><textarea id="cObjective" placeholder="O que será provocado com os jovens? Qual diálogo de direitos humanos entra na oficina?"></textarea></div>
+            <div><label>Metodologia / passo a passo</label><textarea id="cMethod" placeholder="Como será executado? Em qual momento da oficina? Como será registrado?"></textarea></div>
+            <div><label>Materiais pedagógicos necessários como etiquetas</label><input id="cMaterials" placeholder="Separe por vírgula: cartolina, canetas, caixa de som, projetor, cartilha SEDH..."></div>
+            <div class="actions">
+              <button type="button" class="btn secondary" onclick="clearCfdhForm()">Limpar</button>
+              <button class="btn">Salvar planejamento CFDH</button>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Planejamentos cadastrados</h3>
+          <div id="cfdhPlansList" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="calendario" class="section">
+      <div class="card">
+        <div class="calendarTop">
+          <div>
+            <h3 style="margin-bottom:4px">Calendário mensal de funcionamento</h3>
+            <div class="muted smalltxt">Cada etiqueta mostra oficina, status, jovens e CFDH. Clique em registrar para preencher relatório em tempo real.</div>
+          </div>
+          <div class="actions noPrint">
+            <button class="btn secondary" onclick="prevMonth()">◀ Mês anterior</button>
+            <button class="btn secondary" onclick="nextMonth()">Próximo mês ▶</button>
+            <button class="btn" onclick="generateMonthSessions()">Gerar oficinas do mês</button>
+          </div>
+        </div>
+        <div id="calendarTitle" class="chip" style="margin-bottom:12px"></div>
+        <div class="calendar" id="calendar"></div>
+      </div>
+    </section>
+
+    <section id="relatorios" class="section">
+      <div class="grid two">
+        <div class="card noPrint">
+          <h3>Gerar relatórios</h3>
+          <div class="formrow">
+            <div><label>Filtrar educador</label><select id="rEducator"></select></div>
+            <div><label>Filtrar oficina</label><select id="rWorkshop"></select></div>
+          </div>
+          <div class="formrow" style="margin-top:12px">
+            <button class="btn" onclick="generateReport()">Gerar relatório completo</button>
+            <button class="btn secondary" onclick="window.print()">Imprimir / salvar PDF</button>
+          </div>
+          <div class="formrow" style="margin-top:12px">
+            <button class="btn secondary" onclick="downloadReport('txt')">Baixar TXT</button>
+            <button class="btn secondary" onclick="downloadReport('csv')">Baixar CSV quantitativo</button>
+          </div>
+          <div class="notice smalltxt" style="margin-top:14px">
+            O relatório combina dados quantitativos, análise qualitativa, justificativas de não ocorrência, pontos positivos, negativos, encaminhamentos e fotos registradas.
+          </div>
+        </div>
+        <div class="card">
+          <h3>Resumo visual do mês</h3>
+          <div id="reportSummary" class="list"></div>
+        </div>
+      </div>
+      <div class="card printActive" style="margin-top:16px">
+        <h3>Relatório gerado</h3>
+        <div id="reportOutput" class="reportBox">Clique em “Gerar relatório completo”.</div>
+        <div id="reportPhotos"></div>
+      </div>
+    </section>
+
+    <section id="config" class="section">
+      <div class="grid two">
+        <div class="card">
+          <h3>Metas do mês</h3>
+          <form onsubmit="saveSettings(event)">
+            <div class="formrow">
+              <div><label>Nome da unidade</label><input id="sCrj" placeholder="CRJ Cariacica"></div>
+              <div><label>Meta de atendimentos/participações no mês</label><input id="sAttendance" type="number" min="0"></div>
+            </div>
+            <div class="formrow">
+              <div><label>Meta de horas CFDH por educador</label><input id="sCfdhEducator" type="number" min="0" step="0.5"></div>
+              <div><label>Meta mínima de oficinas realizadas no mês</label><input id="sWorkshopsDone" type="number" min="0"></div>
+            </div>
+            <div class="formrow">
+              <div><label>Meta mínima de CFDH estrutural no mês</label><input id="sCfdhStructural" type="number" min="0" step="0.5"></div>
+              <div><label>Mês de referência padrão</label><input id="sMonth" type="month"></div>
+            </div>
+            <button class="btn">Salvar metas</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Backup e manutenção</h3>
+          <div class="grid two">
+            <button class="btn secondary" onclick="exportJson()">Exportar JSON</button>
+            <label class="btn secondary" style="text-align:center">Importar JSON<input type="file" id="importFile" accept="application/json" onchange="importJson(event)" hidden></label>
+            <button class="btn secondary" onclick="downloadHtmlBackup()">Baixar HTML atual</button>
+            <button class="btn danger" onclick="clearAllData()">Apagar dados locais</button>
+          </div>
+          <div class="dangerNote smalltxt" style="margin-top:14px">
+            Os dados ficam no LocalStorage deste navegador. Fotos ocupam espaço; o sistema reduz automaticamente as imagens antes de salvar, mas backups frequentes são recomendados.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="sessionModal">
+  <div class="modalPanel">
+    <div class="modalHead">
+      <div><h3 id="modalTitle">Registrar oficina</h3><div id="modalSub" class="muted smalltxt"></div></div>
+      <button class="close" onclick="closeSessionModal()">×</button>
+    </div>
+    <form id="sessionForm" onsubmit="saveSessionExecution(event)">
+      <input type="hidden" id="mSessionId">
+      <div class="grid two">
+        <div>
+          <div class="formrow three">
+            <div><label>Data</label><input id="mDate" type="date" required></div>
+            <div><label>Início</label><input id="mStart" placeholder="Ex.: 17h30"></div>
+            <div><label>Fim</label><input id="mEnd" placeholder="Ex.: 19h"></div>
+          </div>
+          <div class="formrow three" style="margin-top:12px">
+            <div><label>Nº de jovens presentes</label><input id="mYouth" type="number" min="0" value="0"></div>
+            <div><label>Onde ocorreu</label><input id="mLocation" placeholder="Local de execução"></div>
+            <div><label>Status</label><select id="mStatus" onchange="toggleJustification()"><option value="realizada">Realizada</option><option value="nao_ocorreu">Oficina não ocorreu</option><option value="parcial">Parcial</option></select></div>
+          </div>
+          <div id="justificationBox" class="hidden" style="margin-top:12px"><label>Justificativa de não ocorrência / parcial</label><textarea id="mJustification" placeholder="Explique motivo: ausência do oficineiro, baixa adesão, feriado, demanda emergencial, estrutura, saúde etc."></textarea></div>
+          <div class="divider"></div>
+          <div class="formrow">
+            <div><label>CFDH incluído?</label><select id="mCfdhIncluded" onchange="toggleCfdhManual()"><option value="sim">Sim</option><option value="nao">Não</option></select></div>
+            <div><label>Horas CFDH executadas</label><input id="mCfdhHours" type="number" min="0" step="0.5" value="0"></div>
+          </div>
+          <div id="cfdhManual" style="margin-top:12px">
+            <div class="formrow">
+              <div><label>Tema CFDH executado</label><select id="mCfdhTheme"></select></div>
+              <div><label>Atividade CFDH</label><input id="mCfdhActivity"></div>
+            </div>
+            <div style="margin-top:12px"><label>Materiais pedagógicos usados</label><input id="mMaterialsUsed" placeholder="Separe por vírgula: cartilha, canetas, som..."></div>
+          </div>
+        </div>
+        <div>
+          <label>Pontos positivos</label><textarea id="mPositive" placeholder="Ex.: boa adesão, interação, evolução técnica, jovens ajudaram colegas..."></textarea>
+          <label style="margin-top:10px">Pontos negativos / desafios</label><textarea id="mNegative" placeholder="Ex.: atrasos, conflito, baixa presença, material faltante..."></textarea>
+        </div>
+      </div>
+      <div class="grid two" style="margin-top:12px">
+        <div><label>Observações pontuais com jovens específicos</label><textarea id="mSpecific" placeholder="Use iniciais/código. Ex.: Jovem A demonstrou desânimo; Jovem B pediu encaminhamento..."></textarea></div>
+        <div><label>Encaminhamentos / próximos passos</label><textarea id="mNext" placeholder="Ex.: conversar com equipe técnica, acionar família/rede, reforçar busca ativa, ajustar metodologia..."></textarea></div>
+      </div>
+      <div class="divider"></div>
+      <div class="grid two">
+        <div>
+          <label>Anexar até 5 fotos para relatório fotográfico</label>
+          <input id="mPhotos" type="file" accept="image/*" multiple onchange="handlePhotos(event)">
+          <div class="muted smalltxt" style="margin-top:6px">As imagens serão comprimidas e salvas localmente no navegador.</div>
+        </div>
+        <div><div id="photoPreview" class="photoGrid"></div></div>
+      </div>
+      <div class="actions" style="margin-top:16px">
+        <button type="button" class="btn danger" onclick="markNotOccurred()">Oficina não ocorreu</button>
+        <button type="button" class="btn secondary" onclick="closeSessionModal()">Fechar</button>
+        <button class="btn ok">Salvar registro</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const LS_KEY = 'crj_oficinas_cfdh_v1';
+const THEMES = [
+  'Desafios dos Direitos Humanos na Contemporaneidade',
+  'Raça, Etnia e Direitos Humanos',
+  'População LGBTI+, Direitos Humanos e Identidades',
+  'Violência contra as Mulheres e Relações de Gênero',
+  'Juventude e Questões Geracionais',
+  'Pessoas com Deficiência e Direitos Fundamentais',
+  'Saúde da Juventude',
+  'População em Situação de Rua, Cultura e Direitos',
+  'Sustentabilidade, Meio Ambiente e Responsabilidades',
+  'Comunicação, Mídia e Fake News',
+  'Tema local definido pela equipe'
+];
+const DOW = [
+  {k:0,n:'Domingo',s:'Dom'}, {k:1,n:'Segunda-feira',s:'Seg'}, {k:2,n:'Terça-feira',s:'Ter'}, {k:3,n:'Quarta-feira',s:'Qua'}, {k:4,n:'Quinta-feira',s:'Qui'}, {k:5,n:'Sexta-feira',s:'Sex'}, {k:6,n:'Sábado',s:'Sáb'}
+];
+let state = loadState();
+let cfdhDraftDates = [];
+let sessionPhotos = [];
+let activeTab = 'dashboard';
+let currentReport = '';
+
+function uid(){return 'id_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8)}
+function todayMonth(){return new Date().toISOString().slice(0,7)}
+function loadState(){
+  const raw = localStorage.getItem(LS_KEY);
+  if(raw){try{return JSON.parse(raw)}catch(e){console.warn(e)}}
+  return {settings:{crj:'CRJ Cariacica',month:todayMonth(),targetAttendance:380,targetCfdhPerEducator:20,targetWorkshopsDone:0,targetCfdhStructural:10},workshops:[],cfdhPlans:[],sessions:[]};
+}
+function save(){localStorage.setItem(LS_KEY, JSON.stringify(state));renderAll()}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function esc(s){return String(s??'').replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function splitTags(s){return String(s||'').split(',').map(x=>x.trim()).filter(Boolean)}
+function fmtDate(d){const [y,m,day]=d.split('-');return `${day}/${m}/${y}`}
+function monthName(ym){const [y,m]=ym.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}
+function inCurrentMonth(date){return date && date.slice(0,7)===state.settings.month}
+function getWorkshop(id){return state.workshops.find(w=>w.id===id)}
+function getPlan(id){return state.cfdhPlans.find(p=>p.id===id)}
+function getEducators(){return [...new Set(state.workshops.map(w=>w.educator).concat(state.sessions.map(s=>s.educator)).filter(Boolean))].sort()}
+function pct(a,b){return b>0?Math.min(100,Math.round((a/b)*100)):0}
+
+function init(){
+  document.querySelectorAll('.navbtn').forEach(btn=>btn.addEventListener('click',()=>showTab(btn.dataset.tab)));
+  DOW.forEach(d=>document.getElementById('wDays').insertAdjacentHTML('beforeend', `<label class="checkpill"><input type="checkbox" value="${d.k}">${d.s}</label>`));
+  THEMES.forEach(t=>{document.getElementById('cTheme').insertAdjacentHTML('beforeend',`<option>${esc(t)}</option>`);document.getElementById('mCfdhTheme').insertAdjacentHTML('beforeend',`<option>${esc(t)}</option>`)});
+  buildMonthSelect();
+  renderAll();
+}
+function buildMonthSelect(){
+  const sel=document.getElementById('currentMonth');sel.innerHTML='';
+  const now=new Date(state.settings.month+'-01T00:00:00');
+  for(let i=-12;i<=12;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()+i,1);const ym=d.toISOString().slice(0,7);
+    sel.insertAdjacentHTML('beforeend',`<option value="${ym}" ${ym===state.settings.month?'selected':''}>${monthName(ym)}</option>`);
+  }
+}
+function setCurrentMonth(ym){state.settings.month=ym;saveRaw();buildMonthSelect();renderAll()}
+function saveRaw(){localStorage.setItem(LS_KEY, JSON.stringify(state))}
+function prevMonth(){const d=new Date(state.settings.month+'-01T00:00:00');d.setMonth(d.getMonth()-1);setCurrentMonth(d.toISOString().slice(0,7))}
+function nextMonth(){const d=new Date(state.settings.month+'-01T00:00:00');d.setMonth(d.getMonth()+1);setCurrentMonth(d.toISOString().slice(0,7))}
+
+function showTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===tab));
+  const meta={dashboard:['Painel inicial','Visão geral das oficinas, execução mensal, horas de CFDH transversal por educador, registros e evidências.'],oficinas:['Cadastro de oficinas','Cadastre oficina, oficineiro, educador referência, habilidades, dias de funcionamento e local.'],cfdh:['Planejamento CFDH','Planeje atividades de Direitos Humanos transversais dentro das oficinas, com dias, tema, horas e materiais pedagógicos.'],calendario:['Calendário e execução','Veja o funcionamento mensal, registre ocorrência, justificativa, jovens, fotos e observações em tempo real.'],relatorios:['Relatórios','Gere relatório quantitativo e qualitativo com evidências, fotos, justificativas e indicadores.'],config:['Metas e backup','Ajuste metas mensais e exporte/importa backups do sistema.']};
+  document.getElementById('pageTitle').textContent=meta[tab][0];document.getElementById('pageDesc').textContent=meta[tab][1];
+  renderAll();
+}
+
+function renderAll(){
+  document.getElementById('currentMonth').value=state.settings.month;
+  renderDashboard();renderWorkshopOptions();renderWorkshops();renderCfdhPlans();renderCalendar();renderReportsPanel();renderSettings();
+}
+function monthlySessions(){return state.sessions.filter(s=>inCurrentMonth(s.date))}
+function monthlyDone(){return monthlySessions().filter(s=>s.status==='realizada'||s.status==='parcial')}
+function sessionCfdhHours(filter={}){
+  return monthlyDone().filter(s=>s.cfdhIncluded).filter(s=>!filter.educator||s.educator===filter.educator).filter(s=>!filter.type||s.cfdhType===filter.type).reduce((a,s)=>a+(Number(s.cfdhHours)||0),0)
+}
+function renderDashboard(){
+  const m=monthlySessions(), done=monthlyDone(), cancelled=m.filter(s=>s.status==='nao_ocorreu'), youth=done.reduce((a,s)=>a+(Number(s.youthCount)||0),0);
+  const cfdhH=sessionCfdhHours(); const targetDone=state.settings.targetWorkshopsDone || m.length || 1; const attendanceTarget=Number(state.settings.targetAttendance)||0;
+  const kpis=[
+    ['Oficinas previstas',m.length,'no calendário do mês',pct(done.length,targetDone),'blue'],
+    ['Oficinas executadas',done.length,`${pct(done.length,targetDone)}% da meta`,pct(done.length,targetDone),'green'],
+    ['Horas CFDH executadas',cfdhH.toFixed(1),`meta por educador: ${state.settings.targetCfdhPerEducator}h`,pct(cfdhH,(getEducators().length||1)*state.settings.targetCfdhPerEducator),'yellow'],
+    ['Jovens registrados',youth,attendanceTarget?`${pct(youth,attendanceTarget)}% de ${attendanceTarget}`:'sem meta definida',pct(youth,attendanceTarget||youth||1),'green']
+  ];
+  document.getElementById('kpis').innerHTML=kpis.map(k=>`<div class="card kpi"><div class="label">${k[0]}</div><div class="value">${k[1]}</div><div class="muted smalltxt">${k[2]}</div><div class="progress"><div class="bar ${k[4]}" style="width:${k[3]}%"></div></div></div>`).join('');
+  const educators=getEducators();
+  document.getElementById('educatorProgress').innerHTML=educators.length?educators.map(e=>{
+    const h=sessionCfdhHours({educator:e}); const p=pct(h,state.settings.targetCfdhPerEducator);
+    const status=p>=100?'green':p>=60?'yellow':'red';
+    return `<div class="item"><div class="itemHead"><div><div class="itemTitle">${esc(e)}</div><div class="muted smalltxt">${h.toFixed(1)}h de ${state.settings.targetCfdhPerEducator}h de CFDH transversal/estrutural registradas em oficinas.</div></div><span class="tag ${status}">${p}%</span></div><div class="progress"><div class="bar ${status==='green'?'green':status==='red'?'red':''}" style="width:${p}%"></div></div></div>`
+  }).join(''):'<div class="empty">Nenhum educador cadastrado ainda. Cadastre oficinas para acompanhar metas por educador.</div>';
+  const alerts=[];
+  if(!state.workshops.length) alerts.push(['red','Cadastre pelo menos uma oficina para iniciar o planejamento.']);
+  if(!m.length) alerts.push(['yellow','Gere o calendário do mês para visualizar os dias de funcionamento.']);
+  if(done.length<targetDone) alerts.push(['yellow',`Faltam ${Math.max(0,targetDone-done.length)} oficinas para cumprir a meta mensal configurada.`]);
+  if(cancelled.length) alerts.push(['red',`${cancelled.length} oficina(s) marcada(s) como não ocorreu; revise justificativas e replanejamento.`]);
+  educators.forEach(e=>{const h=sessionCfdhHours({educator:e});if(h<state.settings.targetCfdhPerEducator)alerts.push(['yellow',`${e}: faltam ${(state.settings.targetCfdhPerEducator-h).toFixed(1)}h de CFDH para bater a meta.`])});
+  const structural=sessionCfdhHours({type:'Estrutural'}); if(structural<state.settings.targetCfdhStructural) alerts.push(['yellow',`CFDH estrutural: ${structural.toFixed(1)}h de ${state.settings.targetCfdhStructural}h mínimas configuradas.`]);
+  document.getElementById('alerts').innerHTML=alerts.length?alerts.map(a=>`<div class="${a[0]==='red'?'dangerNote':a[0]==='green'?'successNote':'notice'} smalltxt" style="margin-bottom:8px">${esc(a[1])}</div>`).join(''):'<div class="successNote">Metas principais do mês estão encaminhadas. Continue registrando evidências e observações qualitativas.</div>';
+  const upcoming=m.filter(s=>!s.status || s.status==='planejada').sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);
+  document.getElementById('nextAgenda').innerHTML=upcoming.length?upcoming.map(s=>`<div class="item"><div class="itemHead"><div><div class="itemTitle">${fmtDate(s.date)} — ${esc(s.workshopName)}</div><div class="muted smalltxt">${esc(s.time||'horário não informado')} • ${esc(s.location||'local não informado')}</div><div class="chips">${s.cfdhIncluded?`<span class="tag yellow">CFDH: ${esc(s.cfdhTheme||'planejado')} • ${Number(s.cfdhHours)||0}h</span>`:''}<span class="tag gray">${esc(s.educator||'sem educador')}</span></div></div><button class="btn small" onclick="openSession('${s.id}')">Registrar</button></div></div>`).join(''):'<div class="empty">Sem agenda pendente no mês. Gere o calendário ou cadastre novas oficinas.</div>';
+}
+
+function clearWorkshopForm(){document.getElementById('workshopForm').reset();document.getElementById('workshopId').value='';document.querySelectorAll('#wDays input').forEach(i=>i.checked=false)}
+function saveWorkshop(ev){
+  ev.preventDefault();
+  const id=document.getElementById('workshopId').value||uid();
+  const obj={id,name:wName.value.trim(),instructor:wInstructor.value.trim(),educator:wEducator.value.trim(),location:wLocation.value.trim(),time:wTime.value.trim(),defaultHours:Number(wDefaultHours.value)||0,skills:splitTags(wSkills.value),days:[...document.querySelectorAll('#wDays input:checked')].map(i=>Number(i.value)),obs:wObs.value.trim(),active:true,createdAt:new Date().toISOString()};
+  if(!obj.days.length){toast('Escolha pelo menos um dia de funcionamento.');return}
+  const idx=state.workshops.findIndex(w=>w.id===id); idx>=0?state.workshops[idx]={...state.workshops[idx],...obj}:state.workshops.push(obj);
+  state.sessions.forEach(s=>{if(s.workshopId===id){s.workshopName=obj.name;s.instructor=obj.instructor;s.educator=obj.educator;if(!s.location)s.location=obj.location;if(!s.time)s.time=obj.time}});
+  clearWorkshopForm();save();toast('Oficina salva.');
+}
+function editWorkshop(id){const w=getWorkshop(id);if(!w)return;showTab('oficinas');workshopId.value=w.id;wName.value=w.name;wInstructor.value=w.instructor;wEducator.value=w.educator;wLocation.value=w.location||'';wTime.value=w.time||'';wDefaultHours.value=w.defaultHours||2;wSkills.value=(w.skills||[]).join(', ');wObs.value=w.obs||'';document.querySelectorAll('#wDays input').forEach(i=>i.checked=(w.days||[]).includes(Number(i.value)));window.scrollTo({top:0,behavior:'smooth'})}
+function deleteWorkshop(id){if(!confirm('Excluir oficina? Os registros já criados permanecerão no histórico, mas sem vínculo ativo.'))return;state.workshops=state.workshops.filter(w=>w.id!==id);save();toast('Oficina excluída do cadastro ativo.')}
+function renderWorkshops(){
+  document.getElementById('workshopsList').innerHTML=state.workshops.length?state.workshops.map(w=>`<div class="item"><div class="itemHead"><div><div class="itemTitle">${esc(w.name)}</div><div class="muted smalltxt">Oficineiro: <b>${esc(w.instructor)}</b> • Educador: <b>${esc(w.educator)}</b></div><div class="muted smalltxt">${esc(w.location||'Local não informado')} • ${esc(w.time||'Horário não informado')} • ${Number(w.defaultHours)||0}h por encontro</div><div class="chips">${(w.days||[]).map(d=>`<span class="tag blue">${DOW[d].s}</span>`).join('')}${(w.skills||[]).map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div>${w.obs?`<div class="smalltxt muted" style="margin-top:8px">${esc(w.obs)}</div>`:''}</div><div class="actions"><button class="btn small secondary" onclick="editWorkshop('${w.id}')">Editar</button><button class="btn small danger" onclick="deleteWorkshop('${w.id}')">Excluir</button></div></div></div>`).join(''):'<div class="empty">Nenhuma oficina cadastrada ainda.</div>';
+}
+function renderWorkshopOptions(){
+  const c=document.getElementById('cWorkshop'), rW=document.getElementById('rWorkshop');
+  const opts='<option value="">Selecione...</option>'+state.workshops.map(w=>`<option value="${w.id}">${esc(w.name)} — ${esc(w.educator)}</option>`).join('');
+  c.innerHTML=opts;
+  rW.innerHTML='<option value="">Todas</option>'+state.workshops.map(w=>`<option value="${w.id}">${esc(w.name)}</option>`).join('');
+  const rE=document.getElementById('rEducator');rE.innerHTML='<option value="">Todos</option>'+getEducators().map(e=>`<option>${esc(e)}</option>`).join('');
+}
+
+function fillEducatorByWorkshop(){const w=getWorkshop(cWorkshop.value);if(w)cEducator.value=w.educator}
+function addCfdhDate(){if(!cDatePick.value){toast('Escolha uma data.');return}if(!cfdhDraftDates.includes(cDatePick.value))cfdhDraftDates.push(cDatePick.value);cfdhDraftDates.sort();renderCfdhDates()}
+function clearCfdhDates(){cfdhDraftDates=[];renderCfdhDates()}
+function renderCfdhDates(){document.getElementById('cDates').innerHTML=cfdhDraftDates.length?cfdhDraftDates.map(d=>`<span class="tag yellow">${fmtDate(d)} <button type="button" style="border:0;background:transparent;font-weight:1000;color:#704f00" onclick="removeCfdhDate('${d}')">×</button></span>`).join(''):'<span class="muted smalltxt">Nenhum dia adicionado.</span>'}
+function removeCfdhDate(d){cfdhDraftDates=cfdhDraftDates.filter(x=>x!==d);renderCfdhDates()}
+function addAllWorkshopDatesToCfdh(){
+  const w=getWorkshop(cWorkshop.value);if(!w){toast('Escolha uma oficina.');return}
+  const dates=getDatesForWorkshopInMonth(w,state.settings.month);dates.forEach(d=>{if(!cfdhDraftDates.includes(d))cfdhDraftDates.push(d)});cfdhDraftDates.sort();renderCfdhDates();toast('Dias da oficina adicionados ao planejamento.')
+}
+function clearCfdhForm(){document.getElementById('cfdhForm').reset();document.getElementById('cfdhId').value='';cfdhDraftDates=[];renderCfdhDates()}
+function saveCfdhPlan(ev){
+  ev.preventDefault();const w=getWorkshop(cWorkshop.value);if(!w)return toast('Escolha uma oficina.');if(!cfdhDraftDates.length)return toast('Adicione os dias de execução do CFDH.');
+  const id=document.getElementById('cfdhId').value||uid();
+  const plan={id,workshopId:w.id,workshopName:w.name,educator:cEducator.value.trim()||w.educator,theme:cTheme.value,activity:cActivity.value.trim(),hours:Number(cHours.value)||0,type:cType.value,product:cProduct.value.trim(),dates:[...cfdhDraftDates],objective:cObjective.value.trim(),method:cMethod.value.trim(),materials:splitTags(cMaterials.value),createdAt:new Date().toISOString()};
+  const idx=state.cfdhPlans.findIndex(p=>p.id===id);idx>=0?state.cfdhPlans[idx]=plan:state.cfdhPlans.push(plan);
+  applyCfdhPlanToSessions(plan);
+  clearCfdhForm();save();toast('Planejamento CFDH salvo e aplicado ao calendário.')
+}
+function applyCfdhPlanToSessions(plan){
+  const w=getWorkshop(plan.workshopId);if(!w)return;
+  plan.dates.forEach(date=>{
+    let s=state.sessions.find(x=>x.workshopId===w.id && x.date===date);
+    if(!s){s=createSessionFromWorkshop(w,date);state.sessions.push(s)}
+    s.cfdhPlanId=plan.id;s.cfdhIncluded=true;s.cfdhTheme=plan.theme;s.cfdhActivity=plan.activity;s.cfdhHours=plan.hours;s.cfdhType=plan.type;s.materialsPlanned=plan.materials;s.status=s.status||'planejada';
+  });
+}
+function editCfdhPlan(id){const p=getPlan(id);if(!p)return;showTab('cfdh');cfdhId.value=p.id;cWorkshop.value=p.workshopId;cEducator.value=p.educator;cTheme.value=p.theme;cActivity.value=p.activity;cHours.value=p.hours;cType.value=p.type;cProduct.value=p.product||'';cObjective.value=p.objective||'';cMethod.value=p.method||'';cMaterials.value=(p.materials||[]).join(', ');cfdhDraftDates=[...(p.dates||[])];renderCfdhDates();window.scrollTo({top:0,behavior:'smooth'})}
+function deleteCfdhPlan(id){if(!confirm('Excluir planejamento CFDH? Os registros já realizados permanecerão, mas o planejamento será removido.'))return;state.cfdhPlans=state.cfdhPlans.filter(p=>p.id!==id);state.sessions.forEach(s=>{if(s.cfdhPlanId===id && s.status==='planejada'){s.cfdhPlanId='';s.cfdhIncluded=false;s.cfdhHours=0;s.cfdhTheme='';s.cfdhActivity='';s.cfdhType=''}});save();toast('Planejamento removido.')}
+function renderCfdhPlans(){
+  const plans=state.cfdhPlans.filter(p=>p.dates?.some(inCurrentMonth));
+  document.getElementById('cfdhPlansList').innerHTML=plans.length?plans.map(p=>`<details class="item"><summary class="itemTitle">${esc(p.activity)} — ${esc(p.workshopName)}</summary><div class="muted smalltxt" style="margin-top:8px">Educador: <b>${esc(p.educator)}</b> • Tema: <b>${esc(p.theme)}</b> • ${esc(p.type)} • ${Number(p.hours)||0}h por dia</div><div class="chips">${(p.dates||[]).map(d=>`<span class="tag yellow">${fmtDate(d)}</span>`).join('')}${(p.materials||[]).map(m=>`<span class="tag gray">${esc(m)}</span>`).join('')}</div>${p.objective?`<p class="smalltxt"><b>Objetivo:</b> ${esc(p.objective)}</p>`:''}${p.method?`<p class="smalltxt"><b>Metodologia:</b> ${esc(p.method)}</p>`:''}<div class="actions"><button class="btn small secondary" onclick="editCfdhPlan('${p.id}')">Editar</button><button class="btn small danger" onclick="deleteCfdhPlan('${p.id}')">Excluir</button></div></details>`).join(''):'<div class="empty">Nenhum planejamento CFDH para o mês selecionado.</div>';
+}
+
+function getDatesForWorkshopInMonth(w,ym){const [y,m]=ym.split('-').map(Number);const days=new Date(y,m,0).getDate();const out=[];for(let d=1;d<=days;d++){const dt=new Date(y,m-1,d);if((w.days||[]).includes(dt.getDay()))out.push(`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`)}return out}
+function createSessionFromWorkshop(w,date){return {id:uid(),workshopId:w.id,workshopName:w.name,instructor:w.instructor,educator:w.educator,date,time:w.time||'',location:w.location||'',plannedHours:Number(w.defaultHours)||0,status:'planejada',youthCount:0,cfdhIncluded:false,cfdhHours:0,cfdhTheme:'',cfdhActivity:'',cfdhType:'',positive:'',negative:'',specific:'',next:'',justification:'',materialsUsed:[],photos:[],createdAt:new Date().toISOString()}}
+function generateMonthSessions(){
+  if(!state.workshops.length){toast('Cadastre oficinas antes de gerar o calendário.');return}
+  let created=0;
+  state.workshops.forEach(w=>getDatesForWorkshopInMonth(w,state.settings.month).forEach(date=>{if(!state.sessions.some(s=>s.workshopId===w.id&&s.date===date)){state.sessions.push(createSessionFromWorkshop(w,date));created++}}));
+  state.cfdhPlans.filter(p=>p.dates?.some(inCurrentMonth)).forEach(applyCfdhPlanToSessions);
+  save();toast(created?`${created} oficinas planejadas criadas no mês.`:'Calendário já estava atualizado.');
+}
+function renderCalendar(){
+  document.getElementById('calendarTitle').textContent=monthName(state.settings.month).toUpperCase();
+  const cal=document.getElementById('calendar');cal.innerHTML=DOW.map(d=>`<div class="dow">${d.s}</div>`).join('');
+  const [y,m]=state.settings.month.split('-').map(Number);const first=new Date(y,m-1,1);const days=new Date(y,m,0).getDate();const prevDays=new Date(y,m-1,0).getDate();
+  const start=first.getDay();const total=Math.ceil((start+days)/7)*7;const mSessions=monthlySessions();
+  for(let i=0;i<total;i++){
+    const dayNum=i-start+1;let date='',muted=false,label=dayNum;
+    if(dayNum<1){label=prevDays+dayNum;muted=true}else if(dayNum>days){label=dayNum-days;muted=true}else{date=`${y}-${String(m).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`}
+    const daySessions=date?mSessions.filter(s=>s.date===date).sort((a,b)=>(a.time||'').localeCompare(b.time||'')):[];
+    cal.insertAdjacentHTML('beforeend',`<div class="day ${muted?'mutedDay':''}"><div class="dayNumber"><span>${label}</span>${date?`<span>${DOW[new Date(date+'T00:00:00').getDay()].s}</span>`:''}</div>${daySessions.map(sessionEventHtml).join('')||''}</div>`)
+  }
+}
+function sessionEventHtml(s){const cls=s.status==='realizada'||s.status==='parcial'?'done':s.status==='nao_ocorreu'?'cancel':'';const st=s.status==='realizada'?'Realizada':s.status==='nao_ocorreu'?'Não ocorreu':s.status==='parcial'?'Parcial':'Planejada';return `<div class="event ${cls}"><b>${esc(s.workshopName)}</b><span>${esc(s.time||'horário livre')}</span><div class="line"><span class="tag ${cls==='done'?'green':cls==='cancel'?'red':'gray'}">${st}</span>${s.cfdhIncluded?`<span class="tag yellow">CFDH ${Number(s.cfdhHours)||0}h</span>`:''}${Number(s.youthCount)?`<span class="tag blue">${Number(s.youthCount)} jovens</span>`:''}</div>${s.cfdhIncluded?`<details><summary class="smalltxt"><b>ver CFDH</b></summary><div class="smalltxt muted">${esc(s.cfdhTheme||'Tema')}<br>${esc(s.cfdhActivity||'Atividade')}</div></details>`:''}<button class="btn secondary small" onclick="openSession('${s.id}')">Registrar / abrir</button></div>`}
+
+function openSession(id){const s=state.sessions.find(x=>x.id===id);if(!s)return;sessionPhotos=[...(s.photos||[])];mSessionId.value=s.id;mDate.value=s.date;mStart.value=s.start||'';mEnd.value=s.end||'';mYouth.value=s.youthCount||0;mLocation.value=s.location||'';mStatus.value=s.status==='nao_ocorreu'?'nao_ocorreu':s.status==='parcial'?'parcial':'realizada';mJustification.value=s.justification||'';mCfdhIncluded.value=s.cfdhIncluded?'sim':'nao';mCfdhHours.value=s.cfdhHours||0;mCfdhTheme.value=s.cfdhTheme||THEMES[0];mCfdhActivity.value=s.cfdhActivity||'';mMaterialsUsed.value=(s.materialsUsed||s.materialsPlanned||[]).join(', ');mPositive.value=s.positive||'';mNegative.value=s.negative||'';mSpecific.value=s.specific||'';mNext.value=s.next||'';modalTitle.textContent=`Registrar: ${s.workshopName}`;modalSub.textContent=`${fmtDate(s.date)} • Oficineiro(a): ${s.instructor||'não informado'} • Educador(a): ${s.educator||'não informado'}`;toggleJustification();toggleCfdhManual();renderPhotoPreview();document.getElementById('sessionModal').classList.add('open')}
+function closeSessionModal(){document.getElementById('sessionModal').classList.remove('open');document.getElementById('mPhotos').value=''}
+function toggleJustification(){document.getElementById('justificationBox').classList.toggle('hidden',mStatus.value==='realizada')}
+function toggleCfdhManual(){document.getElementById('cfdhManual').classList.toggle('hidden',mCfdhIncluded.value==='nao')}
+function markNotOccurred(){mStatus.value='nao_ocorreu';toggleJustification();mYouth.value=0;mCfdhHours.value=0;toast('Status alterado para: oficina não ocorreu. Preencha a justificativa.')}
+function saveSessionExecution(ev){
+  ev.preventDefault();const s=state.sessions.find(x=>x.id===mSessionId.value);if(!s)return;
+  s.date=mDate.value;s.start=mStart.value.trim();s.end=mEnd.value.trim();s.youthCount=Number(mYouth.value)||0;s.location=mLocation.value.trim();s.status=mStatus.value;s.justification=mJustification.value.trim();s.cfdhIncluded=mCfdhIncluded.value==='sim' && mStatus.value!=='nao_ocorreu';s.cfdhHours=s.cfdhIncluded?Number(mCfdhHours.value)||0:0;s.cfdhTheme=s.cfdhIncluded?mCfdhTheme.value:'';s.cfdhActivity=s.cfdhIncluded?mCfdhActivity.value.trim():'';s.materialsUsed=splitTags(mMaterialsUsed.value);s.positive=mPositive.value.trim();s.negative=mNegative.value.trim();s.specific=mSpecific.value.trim();s.next=mNext.value.trim();s.photos=sessionPhotos;s.updatedAt=new Date().toISOString();
+  if(s.status==='nao_ocorreu'&&!s.justification){toast('Adicione uma justificativa para oficina não ocorrida.');return}
+  save();closeSessionModal();toast('Registro da oficina salvo.')
+}
+async function handlePhotos(ev){
+  const files=[...ev.target.files].slice(0,5-sessionPhotos.length);if(!files.length){toast('Limite de 5 fotos por oficina.');return}
+  for(const file of files){try{const data=await compressImage(file,1000,.72);sessionPhotos.push({name:file.name,data,at:new Date().toISOString()})}catch(e){console.warn(e);toast('Uma imagem não pôde ser carregada.')}}
+  sessionPhotos=sessionPhotos.slice(0,5);renderPhotoPreview();ev.target.value='';
+}
+function compressImage(file,max=1000,quality=.72){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(Math.max(w,h)>max){if(w>h){h=Math.round(h*max/w);w=max}else{w=Math.round(w*max/h);h=max}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);resolve(canvas.toDataURL('image/jpeg',quality))};img.onerror=reject;img.src=reader.result};reader.onerror=reject;reader.readAsDataURL(file)})}
+function renderPhotoPreview(){document.getElementById('photoPreview').innerHTML=sessionPhotos.map((p,i)=>`<div class="photoThumb"><img src="${p.data}" alt="foto ${i+1}"><button type="button" onclick="removePhoto(${i})">×</button></div>`).join('')}
+function removePhoto(i){sessionPhotos.splice(i,1);renderPhotoPreview()}
+
+function renderReportsPanel(){
+  const m=monthlySessions(),done=monthlyDone();const youth=done.reduce((a,s)=>a+(Number(s.youthCount)||0),0), cfdh=sessionCfdhHours();
+  document.getElementById('reportSummary').innerHTML=`<div class="item"><b>${monthName(state.settings.month)}</b><div class="chips"><span class="tag blue">${m.length} previstas</span><span class="tag green">${done.length} executadas</span><span class="tag red">${m.filter(s=>s.status==='nao_ocorreu').length} não ocorreram</span><span class="tag yellow">${cfdh.toFixed(1)}h CFDH</span><span class="tag gray">${youth} jovens</span></div></div>`;
+}
+function filteredSessionsForReport(){const e=rEducator.value,w=rWorkshop.value;return monthlySessions().filter(s=>(!e||s.educator===e)&&(!w||s.workshopId===w)).sort((a,b)=>a.date.localeCompare(b.date)||a.workshopName.localeCompare(b.workshopName))}
+function generateReport(){
+  const rows=filteredSessionsForReport();const done=rows.filter(s=>s.status==='realizada'||s.status==='parcial');const canc=rows.filter(s=>s.status==='nao_ocorreu');const youth=done.reduce((a,s)=>a+(Number(s.youthCount)||0),0);const cfdh=done.filter(s=>s.cfdhIncluded).reduce((a,s)=>a+(Number(s.cfdhHours)||0),0);const structural=done.filter(s=>s.cfdhIncluded&&s.cfdhType==='Estrutural').reduce((a,s)=>a+(Number(s.cfdhHours)||0),0);
+  const byWorkshop=groupBy(rows,'workshopName');const byEducator=groupBy(rows,'educator');
+  let txt=`RELATÓRIO DE ACOMPANHAMENTO DE OFICINAS E CFDH\n`;
+  txt+=`Unidade: ${state.settings.crj}\nMês de referência: ${monthName(state.settings.month)}\nGerado em: ${new Date().toLocaleString('pt-BR')}\n\n`;
+  txt+=`1. INDICADORES QUANTITATIVOS\n`;
+  txt+=`- Oficinas previstas no calendário: ${rows.length}\n- Oficinas realizadas/parciais: ${done.length}\n- Oficinas que não ocorreram: ${canc.length}\n- Percentual de execução: ${pct(done.length, state.settings.targetWorkshopsDone||rows.length||1)}%\n- Total de jovens registrados nas oficinas: ${youth}\n- Horas de CFDH executadas nas oficinas: ${cfdh.toFixed(1)}h\n- Horas de CFDH estrutural registradas: ${structural.toFixed(1)}h\n\n`;
+  txt+=`2. EXECUÇÃO POR EDUCADOR\n`;
+  Object.keys(byEducator).sort().forEach(e=>{const arr=byEducator[e];const d=arr.filter(s=>s.status==='realizada'||s.status==='parcial');const h=d.filter(s=>s.cfdhIncluded).reduce((a,s)=>a+(Number(s.cfdhHours)||0),0);txt+=`- ${e||'Não informado'}: ${d.length}/${arr.length} oficinas executadas; ${h.toFixed(1)}h CFDH; ${d.reduce((a,s)=>a+(Number(s.youthCount)||0),0)} jovens.\n`});
+  txt+=`\n3. EXECUÇÃO POR OFICINA\n`;
+  Object.keys(byWorkshop).sort().forEach(w=>{const arr=byWorkshop[w];const d=arr.filter(s=>s.status==='realizada'||s.status==='parcial');txt+=`- ${w}: ${d.length}/${arr.length} encontros executados; ${d.reduce((a,s)=>a+(Number(s.youthCount)||0),0)} jovens; ${d.filter(s=>s.cfdhIncluded).reduce((a,s)=>a+(Number(s.cfdhHours)||0),0).toFixed(1)}h CFDH.\n`});
+  txt+=`\n4. REGISTROS QUALITATIVOS POR ENCONTRO\n`;
+  rows.forEach((s,i)=>{txt+=`\n${i+1}) ${fmtDate(s.date)} — ${s.workshopName}\n`;txt+=`Status: ${statusName(s.status)} | Local: ${s.location||'não informado'} | Jovens: ${s.youthCount||0} | Educador: ${s.educator||'não informado'}\n`;if(s.status==='nao_ocorreu')txt+=`Justificativa: ${s.justification||'não informada'}\n`;if(s.cfdhIncluded)txt+=`CFDH: ${s.cfdhTheme||''} — ${s.cfdhActivity||''} (${s.cfdhHours||0}h)\n`;if(s.positive)txt+=`Pontos positivos: ${s.positive}\n`;if(s.negative)txt+=`Pontos negativos/desafios: ${s.negative}\n`;if(s.specific)txt+=`Observações pontuais com jovens: ${s.specific}\n`;if(s.next)txt+=`Encaminhamentos/próximos passos: ${s.next}\n`;if((s.materialsUsed||[]).length)txt+=`Materiais utilizados: ${(s.materialsUsed||[]).join(', ')}\n`;txt+=`Fotos anexadas: ${(s.photos||[]).length}\n`});
+  txt+=`\n5. JUSTIFICATIVAS DE OFICINAS NÃO OCORRIDAS\n`;
+  txt+=canc.length?canc.map(s=>`- ${fmtDate(s.date)} | ${s.workshopName}: ${s.justification||'sem justificativa'}`).join('\n'):'- Não houve oficinas marcadas como não ocorridas.';
+  txt+=`\n\n6. ANÁLISE PARA REPLANEJAMENTO\n`;
+  txt+=`- Verificar oficinas com baixa presença e planejar busca ativa junto à articulação.\n- Revisar materiais pedagógicos necessários para evitar perda de qualidade na execução.\n- Usar observações pontuais para discutir em equipe, preservando identidade dos jovens.\n- Garantir que o CFDH permaneça transversal ao conteúdo das oficinas e que as horas sejam registradas com evidência.\n`;
+  currentReport=txt;document.getElementById('reportOutput').textContent=txt;renderReportPhotos(rows);toast('Relatório gerado.');
+}
+function statusName(s){return s==='realizada'?'Realizada':s==='nao_ocorreu'?'Não ocorreu':s==='parcial'?'Parcial':'Planejada'}
+function groupBy(arr,key){return arr.reduce((o,x)=>{const k=x[key]||'Não informado';(o[k]=o[k]||[]).push(x);return o},{})}
+function renderReportPhotos(rows){const photos=[];rows.forEach(s=>(s.photos||[]).forEach((p,i)=>photos.push({p,s,i})));document.getElementById('reportPhotos').innerHTML=photos.length?`<h3 style="margin-top:18px">Relatório fotográfico</h3><div class="grid three">${photos.map(x=>`<div class="card"><img src="${x.p.data}" style="width:100%;border-radius:16px;max-height:220px;object-fit:cover"><div class="smalltxt muted" style="margin-top:7px">${fmtDate(x.s.date)} — ${esc(x.s.workshopName)} — Foto ${x.i+1}</div></div>`).join('')}</div>`:''}
+function downloadReport(type){if(!currentReport)generateReport();if(type==='csv'){const rows=filteredSessionsForReport();const headers=['data','oficina','oficineiro','educador','status','local','jovens','cfdh_incluido','cfdh_tema','cfdh_atividade','cfdh_horas','justificativa'];const csv=[headers.join(';')].concat(rows.map(s=>headers.map(h=>csvVal({data:fmtDate(s.date),oficina:s.workshopName,oficineiro:s.instructor,educador:s.educator,status:statusName(s.status),local:s.location,jovens:s.youthCount,cfdh_incluido:s.cfdhIncluded?'sim':'não',cfdh_tema:s.cfdhTheme,cfdh_atividade:s.cfdhActivity,cfdh_horas:s.cfdhHours,justificativa:s.justification}[h])).join(';'))).join('\n');downloadBlob(csv,`relatorio_quantitativo_${state.settings.month}.csv`,'text/csv;charset=utf-8');return}downloadBlob(currentReport,`relatorio_oficinas_cfdh_${state.settings.month}.txt`,'text/plain;charset=utf-8')}
+function csvVal(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function downloadBlob(content,name,type){const blob=new Blob([content],{type});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href)}
+
+function renderSettings(){sCrj.value=state.settings.crj||'';sAttendance.value=state.settings.targetAttendance||0;sCfdhEducator.value=state.settings.targetCfdhPerEducator||20;sWorkshopsDone.value=state.settings.targetWorkshopsDone||0;sCfdhStructural.value=state.settings.targetCfdhStructural||10;sMonth.value=state.settings.month}
+function saveSettings(ev){ev.preventDefault();state.settings.crj=sCrj.value.trim()||'CRJ';state.settings.targetAttendance=Number(sAttendance.value)||0;state.settings.targetCfdhPerEducator=Number(sCfdhEducator.value)||20;state.settings.targetWorkshopsDone=Number(sWorkshopsDone.value)||0;state.settings.targetCfdhStructural=Number(sCfdhStructural.value)||0;state.settings.month=sMonth.value||state.settings.month;save();buildMonthSelect();toast('Metas salvas.')}
+function exportJson(){downloadBlob(JSON.stringify(state,null,2),`backup_sistema_oficinas_crj_${state.settings.month}.json`,'application/json')}
+function importJson(ev){const file=ev.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);if(!data.settings||!Array.isArray(data.workshops)||!Array.isArray(data.sessions))throw new Error('Formato inválido');state=data;save();buildMonthSelect();toast('Backup importado com sucesso.')}catch(e){alert('Arquivo inválido ou corrompido.')}};reader.readAsText(file)}
+function clearAllData(){if(confirm('Apagar todos os dados salvos neste navegador?')){localStorage.removeItem(LS_KEY);state=loadState();buildMonthSelect();renderAll();toast('Dados apagados.')}}
+function downloadHtmlBackup(){downloadBlob(document.documentElement.outerHTML,'sistema_acompanhamento_oficinas_crj.html','text/html;charset=utf-8')}
+
+function seedDemo(){
+  if(state.workshops.length && !confirm('Já existem dados. Deseja adicionar o modelo mesmo assim?'))return;
+  const w1={id:uid(),name:'Capoeira',instructor:'Oficineiro de Capoeira',educator:'Wemerson Oliveira',location:'Área multiuso do CRJ',time:'19h às 20h30',defaultHours:1.5,skills:['convivência','disciplina','ancestralidade','expressão corporal'],days:[1,3],obs:'Acompanhar presença, vínculo, demandas espontâneas e integração do tema mensal de Direitos Humanos.',active:true};
+  const w2={id:uid(),name:'Fotografia',instructor:'Oficineira de Fotografia',educator:'Educadora referência',location:'Sala criativa / território',time:'15h às 17h',defaultHours:2,skills:['comunicação','olhar territorial','protagonismo','produção cultural'],days:[3],obs:'Observar produção dos jovens, necessidades de equipamento, potencial para mostra e CFDH de mídia/fake news.',active:true};
+  const w3={id:uid(),name:'Jiu-jitsu',instructor:'Oficineiro de Jiu-jitsu',educator:'Wemerson Oliveira',location:'Tatame / sala multiuso',time:'17h30 às 19h',defaultHours:1.5,skills:['autocuidado','respeito','limites','saúde da juventude'],days:[2,4],obs:'Acompanhar frequência, conflitos, evolução e diálogo sobre saúde, cuidado e respeito.'};
+  state.workshops.push(w1,w2,w3);
+  save();toast('Modelo inicial de oficinas carregado. Clique em gerar calendário do mês.')
+}
+
+init();
+</script>
+</body>
+</html>
