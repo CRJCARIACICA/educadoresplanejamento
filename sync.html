@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRJ Cariacica — Sincronização entre dispositivos</title>
+<style>
+:root{--bg:#f5f1ff;--card:#fff;--ink:#241832;--muted:#6e6381;--line:#ddd2f2;--brand:#5f35b1;--brand2:#7b4ee6;--ok:#168a60;--warn:#a56500;--bad:#b73552}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink);background:linear-gradient(135deg,var(--bg),#fff);min-height:100vh}
+header{padding:18px 22px;background:#2d1552;color:#fff;display:flex;justify-content:space-between;gap:16px;align-items:center;position:sticky;top:0;z-index:4;box-shadow:0 10px 30px rgba(24,10,44,.2)}
+header h1{margin:0;font-size:19px}header p{margin:4px 0 0;color:#dccfff;font-size:12px}.wrap{width:min(1180px,94vw);margin:24px auto 60px}.grid{display:grid;grid-template-columns:390px 1fr;gap:18px;align-items:start}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 16px 40px rgba(47,25,81,.1);margin-bottom:16px}.card h2,.card h3{margin:0 0 10px}.muted{color:var(--muted);line-height:1.5}.field{display:grid;gap:6px;margin:11px 0}.field label{font-size:12px;font-weight:900;color:#4c3766}.field input{width:100%;border:1px solid #d6cae8;border-radius:13px;padding:11px 12px;outline:0}.field input:focus{border-color:#8c65de;box-shadow:0 0 0 4px rgba(123,78,230,.12)}.row{display:flex;gap:9px;flex-wrap:wrap}.btn{border:0;border-radius:13px;padding:11px 13px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}.btn.secondary{background:#fff;color:#4b277f;border:1px solid var(--line)}.btn.ok{background:linear-gradient(135deg,#147a55,#22ad7d)}.btn.warn{background:linear-gradient(135deg,#9b6000,#d79a1d)}.btn:disabled{opacity:.55;cursor:not-allowed}.status{border-radius:15px;padding:12px 13px;line-height:1.45;background:#f3edff;border:1px solid #d9ccf4;color:#4a2a84}.status.ok{background:#eafff4;border-color:#b6ead2;color:#15573e}.status.warn{background:#fff9df;border-color:#f1dc8f;color:#6c4b00}.status.bad{background:#fff0f3;border-color:#efb9c6;color:#74243a}.security{border-left:5px solid #d79a1d;background:#fff9df;padding:12px;border-radius:14px;color:#604500;line-height:1.5;font-size:13px}.appframe{width:100%;height:72vh;border:1px solid var(--line);border-radius:20px;background:#fff}.small{font-size:12px}.kv{display:grid;grid-template-columns:140px 1fr;gap:8px;font-size:13px;padding:7px 0;border-bottom:1px solid #eee8f6}.kv:last-child{border-bottom:0}.kv b{color:#513780}.check{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.4}.check input{margin-top:3px}.log{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;background:#21152f;color:#f4ebff;padding:12px;border-radius:15px;min-height:95px;max-height:190px;overflow:auto;font-size:12px}.top-actions{display:flex;gap:8px;flex-wrap:wrap}@media(max-width:900px){.grid{grid-template-columns:1fr}.appframe{height:68vh}header{position:relative;align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>CRJ Cariacica — sincronização entre dispositivos</h1><p>Aplicativo estático + backup JSON versionado em repositório privado</p></div>
+  <div class="top-actions"><button class="btn secondary" onclick="document.getElementById('app').contentWindow.location.reload()">Recarregar aplicativo</button><button class="btn" onclick="window.open('index.html','_blank')">Abrir em nova aba</button></div>
+</header>
+<div class="wrap">
+  <div class="grid">
+    <aside>
+      <section class="card">
+        <h2>Configuração</h2>
+        <p class="muted small">Use um repositório privado separado para os dados. O repositório público deve conter somente o código do aplicativo.</p>
+        <div class="field"><label>Proprietário do repositório</label><input id="owner" value="CRJCARIACICA"></div>
+        <div class="field"><label>Repositório privado de dados</label><input id="repo" value="educadoresplanejamento-dados"></div>
+        <div class="field"><label>Branch</label><input id="branch" value="main"></div>
+        <div class="field"><label>Caminho do backup</label><input id="path" value="dados/backup-oficial.json"></div>
+        <div class="field"><label>Token fine-grained</label><input id="token" type="password" placeholder="github_pat_..." autocomplete="off"></div>
+        <label class="check"><input id="clearBeforeRestore" type="checkbox" checked><span>Ao baixar, substituir completamente os dados locais deste site.</span></label>
+        <div class="row" style="margin-top:14px"><button class="btn ok" id="pushBtn" onclick="pushBackup()">Enviar para o GitHub</button><button class="btn" id="pullBtn" onclick="pullBackup()">Baixar do GitHub</button></div>
+        <div class="row" style="margin-top:9px"><button class="btn secondary" onclick="testConnection()">Testar acesso</button><button class="btn secondary" onclick="downloadLocalSnapshot()">Baixar JSON local</button></div>
+      </section>
+      <section class="card"><h3>Estado da sincronização</h3><div id="status" class="status">Aguardando configuração.</div><div id="meta" style="margin-top:10px"></div></section>
+      <section class="card"><h3>Registro técnico</h3><div id="log" class="log">Portal iniciado.</div></section>
+      <section class="security"><b>Segurança:</b> o token fica apenas na sessão desta aba e não é gravado no repositório nem no backup. Use permissão <b>Contents: Read and write</b> somente no repositório privado de dados. Nunca coloque listas, contatos ou dados pessoais no repositório público do GitHub Pages.</section>
+    </aside>
+    <main>
+      <section class="card"><h2>Aplicativo</h2><p class="muted small">O aplicativo abaixo usa o mesmo domínio e o mesmo LocalStorage deste portal. Trabalhe normalmente; ao terminar, envie o backup. Em outro dispositivo, baixe o backup antes de começar.</p><iframe id="app" class="appframe" src="index.html" title="Aplicativo CRJ"></iframe></section>
+    </main>
+  </div>
+</div>
+<script>
+const API='https://api.github.com';
+const CFG_KEY='crj_github_sync_config_v1';
+const TOKEN_KEY='crj_github_sync_token_session_v1';
+const $=id=>document.getElementById(id);
+function log(msg){const line=`[${new Date().toLocaleTimeString('pt-BR')}] ${msg}`;$('log').textContent=line+'\n'+$('log').textContent}
+function setStatus(msg,type=''){const el=$('status');el.className='status'+(type?' '+type:'');el.textContent=msg}
+function cfg(){return{owner:$('owner').value.trim(),repo:$('repo').value.trim(),branch:$('branch').value.trim()||'main',path:$('path').value.trim()||'dados/backup-oficial.json',token:$('token').value.trim()}}
+function saveCfg(){const c=cfg();localStorage.setItem(CFG_KEY,JSON.stringify({owner:c.owner,repo:c.repo,branch:c.branch,path:c.path}));if(c.token)sessionStorage.setItem(TOKEN_KEY,c.token)}
+function restoreCfg(){try{const c=JSON.parse(localStorage.getItem(CFG_KEY)||'{}');['owner','repo','branch','path'].forEach(k=>{if(c[k])$(k).value=c[k]})}catch{}$('token').value=sessionStorage.getItem(TOKEN_KEY)||''}
+function validate(){const c=cfg();if(!c.owner||!c.repo||!c.path||!c.token)throw new Error('Preencha proprietário, repositório, caminho e token.');saveCfg();return c}
+function headers(token){return{'Accept':'application/vnd.github+json','Authorization':`Bearer ${token}`,'X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'}}
+function encodeUTF8(text){const bytes=new TextEncoder().encode(text);let binary='';bytes.forEach(b=>binary+=String.fromCharCode(b));return btoa(binary)}
+function decodeUTF8(base64){const binary=atob(base64.replace(/\n/g,''));const bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));return new TextDecoder().decode(bytes)}
+function snapshot(){const items={};for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key!==CFG_KEY)items[key]=localStorage.getItem(key)}return{schema:'crj-localstorage-backup-v1',generatedAt:new Date().toISOString(),origin:location.origin,items}}
+function localDate(){let newest=0;for(let i=0;i<localStorage.length;i++){const raw=localStorage.getItem(localStorage.key(i));try{const obj=JSON.parse(raw);const candidates=[obj.updatedAt,obj.lastUpdated,obj.meta?.updatedAt,obj.config?.updatedAt];for(const d of candidates){const t=Date.parse(d);if(t>newest)newest=t}}catch{}}return newest?new Date(newest):null}
+function meta(remote=null){const ld=localDate();$('meta').innerHTML=`<div class="kv"><b>Chaves locais</b><span>${Math.max(0,localStorage.length-1)}</span></div><div class="kv"><b>Última edição local</b><span>${ld?ld.toLocaleString('pt-BR'):'não identificada'}</span></div>${remote?`<div class="kv"><b>Backup remoto</b><span>${new Date(remote).toLocaleString('pt-BR')}</span></div>`:''}`}
+async function getRemote(c){const url=`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/contents/${c.path.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(c.branch)}`;const res=await fetch(url,{headers:headers(c.token)});if(res.status===404)return null;if(!res.ok){let body={};try{body=await res.json()}catch{}throw new Error(body.message||`GitHub respondeu ${res.status}`)}return res.json()}
+async function testConnection(){try{const c=validate();setStatus('Testando acesso...','warn');const res=await fetch(`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}`,{headers:headers(c.token)});if(!res.ok){let body={};try{body=await res.json()}catch{}throw new Error(body.message||`GitHub respondeu ${res.status}`)}const r=await res.json();setStatus(`Acesso confirmado ao repositório ${r.full_name}. Visibilidade: ${r.private?'privado':'público'}.`,r.private?'ok':'bad');log('Conexão com o repositório confirmada.');if(!r.private)log('ATENÇÃO: o repositório de dados não está privado.')}catch(e){setStatus(e.message,'bad');log('Erro: '+e.message)}}
+async function pushBackup(){try{const c=validate();$('pushBtn').disabled=$('pullBtn').disabled=true;setStatus('Preparando e enviando backup...','warn');const snap=snapshot();const current=await getRemote(c);if(current){try{const remote=JSON.parse(decodeUTF8(current.content));const rt=Date.parse(remote.generatedAt||0);const lt=Date.parse(snap.generatedAt);if(rt>lt&&!confirm('O backup remoto parece mais recente. Deseja substituir mesmo assim?'))return}catch{}}
+const body={message:`Atualiza backup do CRJ em ${new Date().toLocaleString('pt-BR')}`,content:encodeUTF8(JSON.stringify(snap,null,2)),branch:c.branch};if(current?.sha)body.sha=current.sha;const url=`${API}/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/contents/${c.path.split('/').map(encodeURIComponent).join('/')}`;const res=await fetch(url,{method:'PUT',headers:headers(c.token),body:JSON.stringify(body)});if(!res.ok){let er={};try{er=await res.json()}catch{}throw new Error(er.message||`GitHub respondeu ${res.status}`)}setStatus('Backup enviado e versionado com sucesso.','ok');meta(snap.generatedAt);log('Backup enviado para '+c.owner+'/'+c.repo+'/'+c.path)}catch(e){setStatus(e.message,'bad');log('Erro ao enviar: '+e.message)}finally{$('pushBtn').disabled=$('pullBtn').disabled=false}}
+async function pullBackup(){try{const c=validate();$('pushBtn').disabled=$('pullBtn').disabled=true;setStatus('Baixando backup remoto...','warn');const current=await getRemote(c);if(!current)throw new Error('O arquivo de backup ainda não existe no repositório. Faça o primeiro envio neste dispositivo.');const snap=JSON.parse(decodeUTF8(current.content));if(!snap||snap.schema!=='crj-localstorage-backup-v1'||typeof snap.items!=='object')throw new Error('O arquivo remoto não tem o formato de backup esperado.');const remoteLabel=snap.generatedAt?new Date(snap.generatedAt).toLocaleString('pt-BR'):'data desconhecida';if(!confirm(`Restaurar o backup de ${remoteLabel}? Os dados locais serão ${$('clearBeforeRestore').checked?'substituídos':'atualizados'}.`))return;const keepCfg=localStorage.getItem(CFG_KEY);if($('clearBeforeRestore').checked)localStorage.clear();Object.entries(snap.items).forEach(([k,v])=>localStorage.setItem(k,v));if(keepCfg)localStorage.setItem(CFG_KEY,keepCfg);setStatus('Backup restaurado. Recarregando o aplicativo...','ok');meta(snap.generatedAt);log('Backup remoto restaurado.');setTimeout(()=>$('app').contentWindow.location.reload(),500)}catch(e){setStatus(e.message,'bad');log('Erro ao baixar: '+e.message)}finally{$('pushBtn').disabled=$('pullBtn').disabled=false}}
+function downloadLocalSnapshot(){const snap=snapshot();const blob=new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`backup-crj-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500);log('Cópia local em JSON gerada.')}
+['owner','repo','branch','path'].forEach(id=>$(id).addEventListener('input',saveCfg));$('token').addEventListener('input',saveCfg);restoreCfg();meta();
+</script>
+</body>
+</html>
